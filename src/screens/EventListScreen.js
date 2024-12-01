@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { View, Text, FlatList, Button, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { collection, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc, addDoc, query, where, getDocs, deleteDoc as firestoreDeleteDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { db, auth } from '../database/firebase';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const EventListScreen = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [favorites, setFavorites] = useState(new Set());
   const navigation = useNavigation();
 
   useLayoutEffect(() => {
@@ -37,30 +39,96 @@ const EventListScreen = () => {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!auth.currentUser) return;
+
+    const unsubscribeFavorites = onSnapshot(
+      query(collection(db, 'favorites'), where('userId', '==', auth.currentUser.uid)),
+      (querySnapshot) => {
+        const favoriteIds = new Set(querySnapshot.docs.map((doc) => doc.data().eventId));
+        setFavorites(favoriteIds);
+      },
+      (error) => {
+        Alert.alert('Error', error.message);
+      }
+    );
+
+    return () => unsubscribeFavorites();
+  }, [auth.currentUser]);
+
   const handleDelete = async (eventId, creatorId) => {
     if (auth.currentUser?.uid !== creatorId) {
       Alert.alert('Error', 'You are not authorized to delete this event.');
       return;
     }
-    try {
-      await deleteDoc(doc(db, 'events', eventId));
-      Alert.alert('Success', 'Event deleted successfully!');
-    } catch (error) {
-      Alert.alert('Error', error.message);
-    }
+
+    Alert.alert(
+      'Confirm Deletion',
+      'Are you sure you want to delete this event?',
+      [
+        {
+          text: 'No',
+          style: 'cancel',
+        },
+        {
+          text: 'Yes',
+          onPress: async () => {
+            try {
+              await deleteDoc(doc(db, 'events', eventId));
+              Alert.alert('Success', 'Event deleted successfully!');
+            } catch (error) {
+              Alert.alert('Error', error.message);
+            }
+          },
+        },
+      ],
+      { cancelable: false }
+    );
   };
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      //navigation.replace('SignIn');
     } catch (error) {
       Alert.alert('Error', 'Failed to log out. Please try again.');
     }
   };
 
-  const handleFavorites = () => {
-    navigation.navigate('Favorites');
+  const handleFavorites = async (eventId) => {
+    if (!auth.currentUser) {
+      Alert.alert('Error', 'You must be logged in to add favorites.');
+      return;
+    }
+
+    try {
+      const favoriteRef = collection(db, 'favorites');
+      const q = query(
+        favoriteRef,
+        where('userId', '==', auth.currentUser?.uid),
+        where('eventId', '==', eventId)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const favoriteDoc = querySnapshot.docs[0];
+        await firestoreDeleteDoc(favoriteDoc.ref);
+        setFavorites((prev) => {
+          const newFavorites = new Set(prev);
+          newFavorites.delete(eventId);
+          return newFavorites;
+        });
+        Alert.alert('Success', 'Event removed from favorites!');
+      } else {
+        await addDoc(favoriteRef, {
+          userId: auth.currentUser?.uid,
+          eventId,
+        });
+        setFavorites((prev) => new Set(prev).add(eventId));
+        Alert.alert('Success', 'Event added to favorites!');
+      }
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    }
   };
 
   const renderEvent = ({ item }) => (
@@ -83,6 +151,13 @@ const EventListScreen = () => {
         <TouchableOpacity style={styles.detailsButton} onPress={() => navigation.navigate('EventDetails', { event: item })}>
           <Text style={styles.buttonText}>View Details</Text>
         </TouchableOpacity>
+        <TouchableOpacity onPress={() => handleFavorites(item.id)}>
+          <Icon
+            name={favorites.has(item.id) ? 'heart' : 'heart-o'}
+            size={30}
+            color={favorites.has(item.id) ? 'red' : 'gray'}
+          />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -103,7 +178,7 @@ const EventListScreen = () => {
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Text style={styles.buttonText}>Logout</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.favoritesButton} onPress={handleFavorites}>
+          <TouchableOpacity style={styles.favoritesButton} onPress={() => navigation.navigate('Favorites')}>
             <Text style={styles.buttonText}>Favorites</Text>
           </TouchableOpacity>
         </View>
@@ -122,7 +197,7 @@ const EventListScreen = () => {
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.buttonText}>Logout</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.favoritesButton} onPress={handleFavorites}>
+        <TouchableOpacity style={styles.favoritesButton} onPress={() => navigation.navigate('Favorites')}>
           <Text style={styles.buttonText}>Favorites</Text>
         </TouchableOpacity>
       </View>
@@ -154,6 +229,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#4d94ff',
     padding: 10,
     borderRadius: 5,
+  },
+  favoriteButton: {
+    backgroundColor: '#ffcc00',
+    padding: 10,
+    borderRadius: 5,
+  },
+  favoriteButtonActive: {
+    backgroundColor: '#ff9900',
   },
   buttonText: {
     color: '#fff',

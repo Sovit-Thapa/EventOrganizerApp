@@ -11,7 +11,6 @@ const AddEventScreen = ({ navigation }) => {
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // Set the navbar title to "Add Event"
   useLayoutEffect(() => {
     navigation.setOptions({
       title: 'Add Event',
@@ -24,7 +23,6 @@ const AddEventScreen = ({ navigation }) => {
       return;
     }
   
-    // Format the date to "YYYY-MM-DD"
     const formattedDate = date.toISOString().split('T')[0];
   
     try {
@@ -37,7 +35,7 @@ const AddEventScreen = ({ navigation }) => {
         creatorEmail: auth.currentUser?.email,
       });
       Alert.alert('Success', 'Event added successfully!');
-      navigation.goBack(); // Go back to the Event List Screen
+      navigation.goBack();
     } catch (error) {
       let errorMessage = 'Something went wrong. Please try again.';
       if (error.code === 'permission-denied') {
@@ -58,15 +56,13 @@ const AddEventScreen = ({ navigation }) => {
   };
 
   const formatDate = (date) => {
-    // Format the date to "MM/DD/YYYY" format
     const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-    return date.toLocaleDateString('en-US', options); // 'en-US' ensures a MM/DD/YYYY format
+    return date.toLocaleDateString('en-US', options);
   };
 
   return (
     <View style={styles.container}>
 
-      {/* Event Name */}
       <TextInput
         style={styles.input}
         placeholder="Event Name"
@@ -74,7 +70,6 @@ const AddEventScreen = ({ navigation }) => {
         onChangeText={setName}
       />
 
-      {/* Event Description */}
       <TextInput
         style={styles.input}
         placeholder="Description"
@@ -84,7 +79,6 @@ const AddEventScreen = ({ navigation }) => {
         numberOfLines={4}
       />
 
-      {/* Event Location */}
       <TextInput
         style={styles.input}
         placeholder="Location"
@@ -92,7 +86,6 @@ const AddEventScreen = ({ navigation }) => {
         onChangeText={setLocation}
       />
 
-      {/* Date Picker */}
       <View style={styles.datePickerContainer}>
         <Text style={styles.dateLabel}>Event Date:</Text>
         <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
@@ -101,15 +94,14 @@ const AddEventScreen = ({ navigation }) => {
         {showDatePicker && (
           <DateTimePicker
             value={date}
-            mode="date"  // Keeps it to just date (day, month, year)
-            display="default"  // default display for most devices
+            mode="date"
+            display="default"
             onChange={onDateChange}
             style={styles.datePicker}
           />
         )}
       </View>
 
-      {/* Add Event Button */}
       <TouchableOpacity style={styles.addButton} onPress={handleAddEvent}>
         <Text style={styles.buttonText}>Add Event</Text>
       </TouchableOpacity>

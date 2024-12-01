@@ -9,10 +9,9 @@ const EditEventScreen = ({ route, navigation }) => {
   const [name, setName] = useState(event.name);
   const [description, setDescription] = useState(event.description);
   const [location, setLocation] = useState(event.location);
-  const [date, setDate] = useState(new Date(event.date)); // Convert date string to Date object
+  const [date, setDate] = useState(new Date(event.date));
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // Set the navbar title to "Edit Event"
   useLayoutEffect(() => {
     navigation.setOptions({
       title: 'Edit Event',
@@ -26,7 +25,7 @@ const EditEventScreen = ({ route, navigation }) => {
         name,
         description,
         location,
-        date: formatDate(date), // Save as formatted string
+        date: formatDate(date),
       });
       Alert.alert('Success', 'Event updated successfully!');
       navigation.goBack();
@@ -45,22 +44,18 @@ const EditEventScreen = ({ route, navigation }) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`; // Format as YYYY-MM-DD
+    return `${year}-${month}-${day}`;
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Edit Event</Text>
-
-      {/* Event Name */}
       <TextInput
         style={styles.input}
         placeholder="Event Name"
         value={name}
         onChangeText={setName}
       />
-
-      {/* Event Description */}
       <TextInput
         style={styles.input}
         placeholder="Description"
@@ -69,16 +64,12 @@ const EditEventScreen = ({ route, navigation }) => {
         multiline={true}
         numberOfLines={4}
       />
-
-      {/* Event Location */}
       <TextInput
         style={styles.input}
         placeholder="Location"
         value={location}
         onChangeText={setLocation}
       />
-
-      {/* Date Picker */}
       <View style={styles.datePickerContainer}>
         <Text style={styles.dateLabel}>Event Date:</Text>
         <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
@@ -87,15 +78,13 @@ const EditEventScreen = ({ route, navigation }) => {
         {showDatePicker && (
           <DateTimePicker
             value={date}
-            mode="date"  // Keeps it to just date (day, month, year)
-            display="default"  // Default display for most devices
+            mode="date"
+            display="default"
             onChange={onDateChange}
             style={styles.datePicker}
           />
         )}
       </View>
-
-      {/* Save Changes Button */}
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
         <Text style={styles.buttonText}>Save Changes</Text>
       </TouchableOpacity>
@@ -107,23 +96,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#e0f7fa', // Light cyan background
+    backgroundColor: '#e0f7fa',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 16,
     textAlign: 'center',
-    color: '#00796b', // Dark teal color
+    color: '#00796b',
   },
   input: {
     height: 40,
-    borderColor: '#00796b', // Dark teal border color
+    borderColor: '#00796b',
     borderWidth: 1,
     marginBottom: 12,
     paddingLeft: 8,
     borderRadius: 5,
-    backgroundColor: '#ffffff', // White background for input
+    backgroundColor: '#ffffff',
   },
   datePickerContainer: {
     marginBottom: 20,

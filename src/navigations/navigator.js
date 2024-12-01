@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Button } from 'react-native';
-import { onAuthStateChanged } from 'firebase/auth'; // Firebase auth state listener
-import { auth } from '../database/firebase'; // Firebase auth instance
+import { onAuthStateChanged } from 'firebase/auth'; 
+import { auth } from '../database/firebase'; 
 import EventListScreen from '../screens/EventListScreen';
 import AddEventScreen from '../screens/AddEventScreen';
-import SignInScreen from '../screens/SignInScreen';  // Import SignInScreen
-import EventDetailsScreen from '../screens/EventDetailsScreen'; // Import EventDetailsScreen
+import SignInScreen from '../screens/SignInScreen';  
+import EventDetailsScreen from '../screens/EventDetailsScreen'; 
 import SignUpScreen from '../screens/SignUpScreen'; 
-import EditEventScreen from '../screens/EditEventScreen'; // Import EditEventScreen
-import FavoritesScreen from '../screens/FavoritesScreen'; // Import the new FavoritesScreen
+import EditEventScreen from '../screens/EditEventScreen'; 
+import FavoritesScreen from '../screens/FavoritesScreen'; 
 
 const Stack = createStackNavigator();
 
@@ -18,16 +18,15 @@ const AppNavigator = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setIsAuthenticated(!!user);  // Set true if user is authenticated
+      setIsAuthenticated(!!user);  
     });
 
-    return () => unsubscribe();  // Clean up the listener on component unmount
+    return () => unsubscribe();  
   }, []);
 
   return (
     <Stack.Navigator>
       {isAuthenticated ? (
-        // If authenticated, show EventList, AddEvent, EditEvent, EventDetails, and Favorites
         <>
           <Stack.Screen
             name="EventList"
@@ -48,7 +47,6 @@ const AppNavigator = () => {
           />
         </>
       ) : (
-        // If not authenticated, show SignIn and SignUp screens
         <>
           <Stack.Screen 
             name="SignIn" 
