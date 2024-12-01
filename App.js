@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import AppNavigator from './src/navigations/navigator';  // or wherever your AppNavigator is located
+import AppNavigator from './src/navigations/navigator';  
 
 const App = () => {
   return (
